@@ -199,16 +199,22 @@ void Monitor::ONVIF::WaitForMessage() {
               parent->Event_Poller_Closes_Event = true;
               Info("Setting ClosesEvent");
             }
+
           } else {
             // Event Start
             Info("Triggered Start on ONVIF");
             if (alarms.count(last_topic) == 0) {
+              // Support close event logic and only trigger alarmed state once.
               alarms[last_topic] = last_value;
               if (!alarmed) {
                 Info("Triggered Start Event on ONVIF");
                 alarmed = true;
-                // Why sleep?
-                std::this_thread::sleep_for(std::chrono::seconds(1)); //thread sleep
+              }
+            } else {
+              // zm_monitor will generate a pseudo close event for us. Need to trigger on every start event.
+              if (!alarmed) {
+                Info("Triggered Start Event on ONVIF");
+                alarmed = true;
               }
             }
           }
